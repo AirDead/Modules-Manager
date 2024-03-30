@@ -1,6 +1,7 @@
 package ru.airdead.modulessystem.global.minecraft
 
 import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
@@ -56,11 +57,12 @@ abstract class ServerCommand : TabExecutor {
 
     abstract fun onCommand(execution: CommandExecution): Boolean
 
-    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {
+    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return onTabComplete(CommandExecution(sender, args))
     }
 
-    abstract fun onTabComplete(execution: CommandExecution): List<String>?
+    abstract fun onTabComplete(execution: CommandExecution): List<String>
 
-    class CommandExecution(val sender: CommandSender, val args: Array<out String>)
+    class ThrowUsage : RuntimeException()
+
 }

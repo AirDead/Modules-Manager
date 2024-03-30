@@ -13,6 +13,7 @@ class CommandExecution(val player: CommandSender, val args: Array<out String>) {
         throw ServerCommand.ThrowUsage()
     }
 
+
     fun getPlayer(index: Int): Player {
         val name = args[index]
         if (name.isEmpty() || name.isBlank()) throwUsage()
