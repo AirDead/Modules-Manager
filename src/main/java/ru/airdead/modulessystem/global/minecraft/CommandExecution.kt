@@ -14,7 +14,7 @@ class CommandExecution(val player: CommandSender, val args: Array<out String>) {
     }
 
 
-    fun getPlayer(index: Int): Player {
+    private fun getPlayer(index: Int): Player {
         val name = args[index]
         if (name.isEmpty() || name.isBlank()) throwUsage()
         return Bukkit.getPlayer(name) ?: throwUsage()
