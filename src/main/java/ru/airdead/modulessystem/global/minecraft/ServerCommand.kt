@@ -1,13 +1,13 @@
 package ru.airdead.modulessystem.global.minecraft
 
 import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.command.TabExecutor
+import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
-import java.util.HashMap
-import java.util.UUID
+import java.util.*
 
-abstract class ServerCommand : TabExecutor {
+abstract class ServerCommand : CommandExecutor, TabCompleter {
 
     abstract val name: String
     abstract fun getUsage(): String
@@ -19,57 +19,47 @@ abstract class ServerCommand : TabExecutor {
     private val cooldowns = HashMap<UUID, Long>()
 
     companion object {
-        private const val MILLIS_PER_SECOND = 1000
+        private const val MILLIS_PER_SECOND = 1000L
     }
 
-    override fun onCommand(commandSender: CommandSender, command: Command, s: String, strings: Array<out String>): Boolean {
-        if (!isConsoleFriendly && commandSender !is Player) {
-            commandSender.sendMessage("Эта команда недоступна из консоли.")
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (!isConsoleFriendly && sender !is Player) {
+            sender.sendMessage("Эта команда недоступна из консоли.")
             return true
         }
 
-        if (commandSender is Player) {
-            val playerId = commandSender.uniqueId
-            cooldowns[playerId]?.let {
-                val timeElapsed = System.currentTimeMillis() - it
+        sender as? Player?.let { player ->
+            cooldowns[player.uniqueId]?.let { lastUsed ->
+                val timeElapsed = System.currentTimeMillis() - lastUsed
                 if (timeElapsed < cooldown * MILLIS_PER_SECOND) {
-                    commandSender.sendMessage("§cПожалуйста, подождите ${((cooldown * MILLIS_PER_SECOND - timeElapsed) / MILLIS_PER_SECOND)} секунд, прежде чем использовать эту команду снова.")
+                    val timeLeft = (cooldown * MILLIS_PER_SECOND - timeElapsed) / MILLIS_PER_SECOND
+                    player.sendMessage("§cПожалуйста, подождите $timeLeft секунд, прежде чем использовать эту команду снова.")
                     return true
                 }
             }
-            cooldowns[playerId] = System.currentTimeMillis()
+            cooldowns[player.uniqueId] = System.currentTimeMillis()
         }
 
-        if (permissionNode != null) {
-            val permission = permissionNode
-            if (!commandSender.hasPermission(permission!!)) {
-                commandSender.sendMessage("У вас нет разрешения использовать эту команду.")
-                return true
-            }
-        }
-
-
-        if(strings.isNotEmpty() && argsRequirement != null && strings.size != argsRequirement) {
-            commandSender.sendMessage(getUsage())
+        if (permissionNode != null && !sender.hasPermission(permissionNode)) {
+            sender.sendMessage("У вас нет разрешения использовать эту команду.")
             return true
         }
 
-        return try {
-            onCommand(CommandExecution(commandSender, strings))
-            true
-        } catch (e: Exception) {
-            commandSender.sendMessage(getUsage())
-            false
+        if (args.isNotEmpty() && argsRequirement != null && args.size != argsRequirement) {
+            sender.sendMessage(getUsage())
+            return true
         }
+
+        return onCommand(CommandExecution(sender, args))
     }
 
     abstract fun onCommand(execution: CommandExecution): Boolean
 
-    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
+    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {
         return onTabComplete(CommandExecution(sender, args))
     }
 
-    abstract fun onTabComplete(execution: CommandExecution): List<String>
+    abstract fun onTabComplete(execution: CommandExecution): List<String>?
 
-    class ThrowUsage : RuntimeException()
+    class CommandExecution(val sender: CommandSender, val args: Array<out String>)
 }
