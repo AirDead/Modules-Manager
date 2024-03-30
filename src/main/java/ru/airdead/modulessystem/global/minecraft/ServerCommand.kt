@@ -1,13 +1,12 @@
 package ru.airdead.modulessystem.global.minecraft
 
 import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.command.TabCompleter
+import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
 import java.util.*
 
-abstract class ServerCommand : CommandExecutor, TabCompleter {
+abstract class ServerCommand : TabExecutor {
 
     abstract val name: String
     abstract fun getUsage(): String
@@ -28,24 +27,26 @@ abstract class ServerCommand : CommandExecutor, TabCompleter {
             return true
         }
 
-        sender as? Player?.let { player ->
-            cooldowns[player.uniqueId]?.let { lastUsed ->
+        if (sender is Player) {
+            cooldowns[sender.uniqueId]?.let { lastUsed ->
                 val timeElapsed = System.currentTimeMillis() - lastUsed
                 if (timeElapsed < cooldown * MILLIS_PER_SECOND) {
                     val timeLeft = (cooldown * MILLIS_PER_SECOND - timeElapsed) / MILLIS_PER_SECOND
-                    player.sendMessage("§cПожалуйста, подождите $timeLeft секунд, прежде чем использовать эту команду снова.")
+                    sender.sendMessage("§cПожалуйста, подождите $timeLeft секунд, прежде чем использовать эту команду снова.")
                     return true
                 }
             }
-            cooldowns[player.uniqueId] = System.currentTimeMillis()
+            cooldowns[sender.uniqueId] = System.currentTimeMillis()
         }
 
-        if (permissionNode != null && !sender.hasPermission(permissionNode)) {
+        val permNode = permissionNode
+        if (permNode != null && !sender.hasPermission(permNode)) {
             sender.sendMessage("У вас нет разрешения использовать эту команду.")
             return true
         }
 
-        if (args.isNotEmpty() && argsRequirement != null && args.size != argsRequirement) {
+        val requiredArgs = argsRequirement
+        if (args.isNotEmpty() && requiredArgs != null && args.size < requiredArgs) {
             sender.sendMessage(getUsage())
             return true
         }
