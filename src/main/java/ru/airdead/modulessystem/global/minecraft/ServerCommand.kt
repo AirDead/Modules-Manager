@@ -52,7 +52,7 @@ abstract class ServerCommand : TabExecutor {
             return true
         }
 
-        if (player is Player) {
+        if (sender is Player) {
             return onCommand(CommandExecution(sender as Player, args))
         } else {
             return onCommand(CommandExecution(sender, args))
@@ -68,5 +68,4 @@ abstract class ServerCommand : TabExecutor {
     abstract fun onTabComplete(execution: CommandExecution): List<String>
 
     class ThrowUsage : RuntimeException()
-
 }
