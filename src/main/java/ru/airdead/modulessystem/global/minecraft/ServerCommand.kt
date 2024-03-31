@@ -52,7 +52,7 @@ abstract class ServerCommand : TabExecutor {
             return true
         }
 
-        if (sender is Player) {
+        if (!isConsoleFriendly) {
             return onCommand(CommandExecution(sender as Player, args))
         } else {
             return onCommand(CommandExecution(sender, args))
