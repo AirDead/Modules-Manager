@@ -13,7 +13,6 @@ class CommandExecution(val player: CommandSender, val args: Array<out String>) {
         throw ServerCommand.ThrowUsage()
     }
 
-
     private fun getPlayer(index: Int): Player {
         val name = args[index]
         if (name.isEmpty() || name.isBlank()) throwUsage()
@@ -92,10 +91,29 @@ class CommandExecution(val player: CommandSender, val args: Array<out String>) {
 
     fun getCharOrNull(index: Int): Char? = args.getOrNull(index)?.firstOrNull()
 
+    fun getString(index: Int): String {
+        val value = args[index]
+        if (value.isEmpty() || value.isBlank()) throwUsage()
+        return value
+    }
+
+    fun getStringOrNull(index: Int): String? {
+        val value = args.getOrNull(index)
+        return if (value.isNullOrEmpty() || value.isBlank()) null else value
+    }
+
     fun getOfflinePlayer(index: Int): OfflinePlayer {
         val name = args[index]
         if (name.isEmpty() || name.isBlank()) throwUsage()
         return Bukkit.getOfflinePlayer(name)
+    }
+
+    fun getOfflinePlayerOrNull(index: Int): OfflinePlayer? {
+        val name = args.getOrNull(index) ?: return null
+        if (name.isEmpty() || name.isBlank()) return null
+
+        val offlinePlayer = Bukkit.getOfflinePlayer(name)
+        return if (offlinePlayer.hasPlayedBefore() || offlinePlayer.isOnline) offlinePlayer else null
     }
 
     fun getOnlinePlayer(index: Int): Player = getPlayer(index)
