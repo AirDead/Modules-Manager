@@ -52,7 +52,11 @@ abstract class ServerCommand : TabExecutor {
             return true
         }
 
-        return onCommand(CommandExecution(sender, args))
+        if (player is Player) {
+            return onCommand(CommandExecution(sender as Player, args))
+        } else {
+            return onCommand(CommandExecution(sender, args))
+        }
     }
 
     abstract fun onCommand(execution: CommandExecution): Boolean
