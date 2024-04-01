@@ -40,14 +40,15 @@ abstract class ServerCommand : TabExecutor {
             cooldowns[sender.uniqueId] = System.currentTimeMillis()
         }
 
-        val permNode = permissionNode
-        if (permNode != null && !sender.hasPermission(permNode)) {
-            sender.sendMessage("У вас нет разрешения использовать эту команду.")
-            return true
+        permissionNode?.let {
+            if (!sender.hasPermission(it)) {
+                sender.sendMessage("У вас нет разрешения использовать эту команду.")
+                return true
+            }
         }
 
         val requiredArgs = argsRequirement
-        if (args.isNotEmpty() && requiredArgs != null && args.size < requiredArgs) {
+        if (requiredArgs != null && args.size < requiredArgs) {
             sender.sendMessage(getUsage())
             return true
         }
