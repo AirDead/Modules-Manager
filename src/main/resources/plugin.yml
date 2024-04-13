@@ -1,4 +1,0 @@
-name: ModulesSystem
-version: '${project.version}'
-main: ru.airdead.modulessystem.Plugin
-api-version: '1.16'
