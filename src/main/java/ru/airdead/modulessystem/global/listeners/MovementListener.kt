@@ -20,14 +20,12 @@ class MovementListener : Listener {
         val playerUUID = player.uniqueId
         val currentTime = System.currentTimeMillis()
 
+        initialLocations.putIfAbsent(playerUUID, event.from)
         val lastTime = lastEventTimes.computeIfAbsent(playerUUID) { AtomicLong(currentTime) }
 
-        initialLocations[playerUUID] = event.from
-        if (currentTime - lastTime.get() >= TICKS_PER_EVENT) {
+        if (currentTime - lastTime.get() >= TICKS_PER_EVENT && hasMoved(event.from, event.to)) {
             lastTime.set(currentTime)
-            if (hasMoved(event.from, event.to)) {
-                callCustomEvent(player, event.from, event.to)
-            }
+            callCustomEvent(player, event.from, event.to)
         }
     }
 
