@@ -41,8 +41,5 @@ abstract class ServerPlugin : JavaPlugin() {
     private fun register(listener: Listener) {
         server.pluginManager.registerEvents(listener, this)
     }
-
-    companion object {
-        lateinit var instance: JavaPlugin
-    }
+    
 }
