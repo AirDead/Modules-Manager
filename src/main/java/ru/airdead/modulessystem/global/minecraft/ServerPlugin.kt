@@ -44,6 +44,5 @@ abstract class ServerPlugin : JavaPlugin() {
 
     companion object {
         lateinit var instance: JavaPlugin
-            private set
     }
 }
