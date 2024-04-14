@@ -1,22 +1,23 @@
 package ru.airdead.modulessystem.global.listeners
 
-import java.util.UUID
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerMoveEvent
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
 class MovementListener : Listener {
+    private val initialLocations: MutableMap<UUID, Location> = ConcurrentHashMap()
     private val lastEventTimes: MutableMap<UUID, AtomicLong> = ConcurrentHashMap()
-    private val TICKS_PER_EVENT = 5 * 50L // Преобразуем тики в миллисекунды заранее
+    private val TICKS_PER_EVENT = 5 * 50L 
 
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
-        val player: Player = event.player
-        val playerUUID: UUID = player.uniqueId
+        val player = event.player
+        val playerUUID = player.uniqueId
         val currentTime = System.currentTimeMillis()
 
         val lastTime = lastEventTimes.computeIfAbsent(playerUUID) { AtomicLong(currentTime) }
@@ -24,6 +25,7 @@ class MovementListener : Listener {
         if (currentTime - lastTime.get() >= TICKS_PER_EVENT) {
             lastTime.set(currentTime)
             if (hasMoved(event.from, event.to)) {
+                initialLocations[playerUUID] = event.from
                 callCustomEvent(player, event.from, event.to)
             }
         }
@@ -32,10 +34,14 @@ class MovementListener : Listener {
     private fun callCustomEvent(player: Player, from: Location, to: Location?) {
         val customEvent = CustomPlayerMoveEvent(player, from, to)
         player.server.pluginManager.callEvent(customEvent)
+        if (customEvent.isCancelled) {
+            initialLocations[player.uniqueId]?.let { player.teleport(it) }
+        }
     }
 
     private fun hasMoved(from: Location, to: Location?): Boolean {
         if (to == null) return false
-        return from.blockX != to.blockX || from.blockY != to.blockY || from.blockZ != to.blockZ
+        return from.blockX != to.blockX || from.blockY != to.blockY || from.blockZ != to.blockZ ||
+                from.yaw != to.yaw || from.pitch != to.pitch
     }
 }

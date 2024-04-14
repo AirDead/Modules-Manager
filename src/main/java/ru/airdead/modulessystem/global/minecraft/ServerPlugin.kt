@@ -13,13 +13,14 @@ abstract class ServerPlugin : JavaPlugin() {
     override fun onEnable() {
         instance = this
         server.pluginManager.registerEvents(MovementListener(), this)
+        loadComponents()
     }
 
     override fun onDisable() {
         modulesManager.unloadAll()
     }
 
-    fun loadComponents() {
+    private fun loadComponents() {
         components.forEach { component ->
             when (component) {
                 is Listener -> register(component)
