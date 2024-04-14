@@ -11,7 +11,6 @@ abstract class ServerPlugin : JavaPlugin() {
     abstract val components: List<Any>
 
     override fun onEnable() {
-        instance = this
         server.pluginManager.registerEvents(MovementListener(), this)
         loadComponents()
     }
@@ -44,7 +43,7 @@ abstract class ServerPlugin : JavaPlugin() {
     }
 
     companion object {
-        lateinit var instance: ServerPlugin
+        lateinit var instance: JavaPlugin
             private set
     }
 }
