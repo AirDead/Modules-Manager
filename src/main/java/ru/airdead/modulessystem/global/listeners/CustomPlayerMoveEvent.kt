@@ -29,8 +29,10 @@ class CustomPlayerMoveEvent(
         from.pitch != to!!.pitch || from.yaw != to!!.yaw
 
     companion object {
+        @JvmStatic
         val handlers = HandlerList()
 
+        @JvmStatic
         fun getHandlerList(): HandlerList = handlers
     }
 
