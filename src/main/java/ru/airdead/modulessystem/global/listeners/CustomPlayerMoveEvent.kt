@@ -14,10 +14,20 @@ class CustomPlayerMoveEvent(
 ) : PlayerEvent(player), Cancellable {
     private var cancelled = false
 
+    companion object {
+        @JvmStatic
+        val handlerList = HandlerList()  // Renamed to avoid potential clashing
+
+        @JvmStatic
+        fun getHandlerList(): HandlerList = handlerList
+    }
+
+    override fun getHandlers(): HandlerList = handlerList
+
     override fun isCancelled(): Boolean = cancelled
 
     override fun setCancelled(cancel: Boolean) {
-        cancelled = cancel
+        this.cancelled = cancel
     }
 
     fun hasChangedPosition(): Boolean = !from.equals(to)
@@ -27,14 +37,4 @@ class CustomPlayerMoveEvent(
 
     fun hasChangedOrientation(): Boolean =
         from.pitch != to!!.pitch || from.yaw != to!!.yaw
-
-    companion object {
-        @JvmStatic
-        val handlers = HandlerList()
-
-        @JvmStatic
-        fun getHandlerList(): HandlerList = handlers
-    }
-
-    override fun getHandlers(): HandlerList = handlers
 }
