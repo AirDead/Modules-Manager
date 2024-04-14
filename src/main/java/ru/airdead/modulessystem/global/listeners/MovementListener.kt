@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong
 class MovementListener : Listener {
     private val initialLocations: MutableMap<UUID, Location> = ConcurrentHashMap()
     private val lastEventTimes: MutableMap<UUID, AtomicLong> = ConcurrentHashMap()
-    private val TICKS_PER_EVENT = 5 * 50L 
+    private val TICKS_PER_EVENT = 5 * 50L
 
     @EventHandler
     fun onPlayerMove(event: PlayerMoveEvent) {
@@ -22,10 +22,10 @@ class MovementListener : Listener {
 
         val lastTime = lastEventTimes.computeIfAbsent(playerUUID) { AtomicLong(currentTime) }
 
+        initialLocations[playerUUID] = event.from
         if (currentTime - lastTime.get() >= TICKS_PER_EVENT) {
             lastTime.set(currentTime)
             if (hasMoved(event.from, event.to)) {
-                initialLocations[playerUUID] = event.from
                 callCustomEvent(player, event.from, event.to)
             }
         }
@@ -35,7 +35,7 @@ class MovementListener : Listener {
         val customEvent = CustomPlayerMoveEvent(player, from, to)
         player.server.pluginManager.callEvent(customEvent)
         if (customEvent.isCancelled) {
-            initialLocations[player.uniqueId]?.let { player.teleport(it) }
+            player.teleport(initialLocations[player.uniqueId]!!)
         }
     }
 
