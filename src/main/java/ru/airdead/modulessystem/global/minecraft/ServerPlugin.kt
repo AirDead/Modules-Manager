@@ -57,20 +57,16 @@ abstract class ServerPlugin : JavaPlugin() {
             val lastLocation = eventLocations[player.uniqueId]
 
             if (lastLocation == null) {
-                // Добавляем новую локацию игрока в HashMap, если его локация не была зарегистрирована ранее
                 eventLocations[player.uniqueId] = currentLocation.clone()
             } else if (lastLocation.blockX != currentLocation.blockX ||
                 lastLocation.blockY != currentLocation.blockY ||
                 lastLocation.blockZ != currentLocation.blockZ) {
-                // Создаем и вызываем CustomPlayerMoveEvent
                 val event = CustomPlayerMoveEvent(player, lastLocation, currentLocation)
                 Bukkit.getPluginManager().callEvent(event)
 
                 if (event.isCancelled) {
-                    // Если событие отменено, телепортируем игрока обратно на предыдущую локацию
                     player.teleport(lastLocation)
                 } else {
-                    // Обновляем локацию в HashMap, если событие не отменено
                     eventLocations[player.uniqueId] = currentLocation.clone()
                 }
             }
