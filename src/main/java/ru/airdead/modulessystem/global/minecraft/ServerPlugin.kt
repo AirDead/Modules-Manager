@@ -1,18 +1,23 @@
 package ru.airdead.modulessystem.global.minecraft
 
+import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
-import ru.airdead.modulessystem.global.listeners.MovementListener
+import ru.airdead.modulessystem.global.listeners.CustomPlayerMoveEvent
 import ru.airdead.modulessystem.modules.ModulesManager
 import ru.airdead.modulessystem.modules.PluginModule
+import java.util.*
+import kotlin.collections.HashMap
 
 abstract class ServerPlugin : JavaPlugin() {
     val modulesManager: ModulesManager = ModulesManager(this)
+    private var eventLocations: HashMap<UUID, Location> = hashMapOf()
     abstract val components: List<Any>
 
     override fun onEnable() {
-        server.pluginManager.registerEvents(MovementListener(), this)
         loadComponents()
+        setupMovementChecker()
     }
 
     override fun onDisable() {
@@ -30,6 +35,10 @@ abstract class ServerPlugin : JavaPlugin() {
         modulesManager.loadAll()
     }
 
+    private fun register(listener: Listener) {
+        server.pluginManager.registerEvents(listener, this)
+    }
+
     private fun register(command: ServerCommand) {
         val bukkitCommand = getCommand(command.name)
         if(bukkitCommand != null) {
@@ -38,8 +47,34 @@ abstract class ServerPlugin : JavaPlugin() {
         }
     }
 
-    private fun register(listener: Listener) {
-        server.pluginManager.registerEvents(listener, this)
+    private fun setupMovementChecker() {
+        server.scheduler.scheduleSyncRepeatingTask(this, ::playerMove, 0L, 10L)
     }
-    
+
+    private fun playerMove() {
+        Bukkit.getOnlinePlayers().forEach { player ->
+            val currentLocation = player.location
+            val lastLocation = eventLocations[player.uniqueId]
+
+            if (lastLocation == null) {
+                // Добавляем новую локацию игрока в HashMap, если его локация не была зарегистрирована ранее
+                eventLocations[player.uniqueId] = currentLocation.clone()
+            } else if (lastLocation.blockX != currentLocation.blockX ||
+                lastLocation.blockY != currentLocation.blockY ||
+                lastLocation.blockZ != currentLocation.blockZ) {
+                // Создаем и вызываем CustomPlayerMoveEvent
+                val event = CustomPlayerMoveEvent(player, lastLocation, currentLocation)
+                Bukkit.getPluginManager().callEvent(event)
+
+                if (event.isCancelled) {
+                    // Если событие отменено, телепортируем игрока обратно на предыдущую локацию
+                    player.teleport(lastLocation)
+                } else {
+                    // Обновляем локацию в HashMap, если событие не отменено
+                    eventLocations[player.uniqueId] = currentLocation.clone()
+                }
+            }
+        }
+    }
+
 }
