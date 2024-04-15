@@ -39,7 +39,7 @@ fun spawnParticlesUntilBlockOrPlayer(start: Location, direction: Vector, maxDist
 
 fun spawnShrinkingCircle(plugin: Plugin, player: Player, initialRadius: Double, particleType: Particle = Particle.FLAME, durationTicks: Long = 100L, steps: Int = 20, particleCount: Int = 36) {
     val world = player.world
-    val initialLocation = player.eyeLocation.add(player.location.direction.multiply(3))
+    val initialLocation = player.location
 
     object : BukkitRunnable() {
         var currentRadius = initialRadius
